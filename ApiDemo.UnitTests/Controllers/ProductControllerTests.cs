@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Xunit;
+using Microsoft.Extensions.Logging;
 
 namespace ApiDemo.UnitTests.Controllers
 {
@@ -18,9 +19,10 @@ namespace ApiDemo.UnitTests.Controllers
         {
             // arrange
             var service = Substitute.For<IProductService>();
+            var logger = Substitute.For<ILogger<ProductController>>();
             service.GetAllProducts().Returns(x => { throw new Exception(); });
 
-            var controller = new ProductController(service);
+            var controller = new ProductController(service, logger);
 
             // act
             var result = controller.GetAll();
@@ -36,6 +38,7 @@ namespace ApiDemo.UnitTests.Controllers
         {
             // arrange
             var service = Substitute.For<IProductService>();
+            var logger = Substitute.For<ILogger<ProductController>>();
 
             var expectedList = new List<ProductItem>()
             {
@@ -46,7 +49,7 @@ namespace ApiDemo.UnitTests.Controllers
 
             service.GetAllProducts().Returns(expectedList);
 
-            var controller = new ProductController(service);
+            var controller = new ProductController(service, logger);
 
             // act
             var result = controller.GetAll();

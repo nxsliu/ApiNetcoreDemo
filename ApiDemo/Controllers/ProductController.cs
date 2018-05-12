@@ -6,6 +6,7 @@ using ApiDemo.Models;
 using ApiDemo.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace ApiDemo.Controllers
 {
@@ -14,10 +15,12 @@ namespace ApiDemo.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly ILogger _logger;
 
-        public ProductController(IProductService productService)
+        public ProductController(IProductService productService, ILogger<ProductController> logger)
         {
             _productService = productService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -25,12 +28,14 @@ namespace ApiDemo.Controllers
         {
             try
             {
+                _logger.LogInformation("GetAll");
                 var products = _productService.GetAllProducts();
 
                 return Ok(products);
             } 
             catch (Exception ex)
             {
+                _logger.LogError(ex, "GetAll failure");
                 return StatusCode(StatusCodes.Status500InternalServerError, "Sorry something went wrong");
             }
         }
@@ -75,12 +80,12 @@ namespace ApiDemo.Controllers
 
         [HttpPut("{id}")]
         public async Task <IActionResult> Update([FromBody]ProductItem item)
-        {
-            if (!ValidateProduct(item))
-                return BadRequest();
-
+        {            
             try
             {
+                if (!ValidateProduct(item))
+                    return BadRequest();
+
                 var product = await _productService.UpdateProduct(item);
 
                 if (product == null)

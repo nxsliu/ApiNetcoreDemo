@@ -1,4 +1,5 @@
 ﻿using ApiDemo.Models;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,90 +20,58 @@ namespace ApiDemo.Repositories
     public class ProductRepository : IProductRepository
     {
         private readonly ProductContext _context;
+        private readonly ILogger _logger;
 
-        public ProductRepository(ProductContext context)
+        public ProductRepository(ProductContext context, ILogger<ProductRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public IEnumerable<ProductItem> GetAllProducts()
         {
-            try
-            {
-                return _context.ProductItems.ToList();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            _logger.LogInformation("GetAllProducts");
+            return _context.ProductItems.ToList();
         }
 
         public async Task<ProductItem> GetProduct(Guid id)
         {
-            try
-            {
-                return await _context.ProductItems.FindAsync(id);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            return await _context.ProductItems.FindAsync(id);
         }
 
         public async Task CreateProduct(ProductItem item)
         {
-            try
-            {
-                _context.ProductItems.Add(item);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            _context.ProductItems.Add(item);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<ProductItem> UpdateProduct(ProductItem item)
         {
-            try
-            {
-                var product = await _context.ProductItems.FindAsync(item.Id);
+            var product = await _context.ProductItems.FindAsync(item.Id);
 
-                if (product == null)
-                    return null;
+            if (product == null)
+                return null;
 
-                product.Balance = item.Balance;
-                product.Name = item.Name;
+            product.Balance = item.Balance;
+            product.Name = item.Name;
 
-                _context.ProductItems.Update(product);
-                await _context.SaveChangesAsync();
+            _context.ProductItems.Update(product);
+            await _context.SaveChangesAsync();
 
-                return product;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+            return product;
+    }
 
         public async Task<ProductItem> DeleteProduct(Guid id)
         {
-            try
-            {
-                var product = await _context.ProductItems.FindAsync(id);
+            var product = await _context.ProductItems.FindAsync(id);
 
-                if (product == null)
-                    return null;
+            if (product == null)
+                return null;
 
-                _context.ProductItems.Remove(product);
-                await _context.SaveChangesAsync();
+            _context.ProductItems.Remove(product);
+            await _context.SaveChangesAsync();
 
-                return product;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            return product;
         }
     }
 }
