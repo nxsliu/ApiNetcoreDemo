@@ -26,17 +26,20 @@ namespace ApiDemo.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            try
+            using (_logger.BeginScope($"Log ScopeId: {Guid.NewGuid()}"))
             {
-                _logger.LogInformation("GetAll");
-                var products = _productService.GetAllProducts();
+                try
+                {
+                    _logger.LogInformation("GetAll");
+                    var products = _productService.GetAllProducts();
 
-                return Ok(products);
-            } 
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "GetAll failure");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Sorry something went wrong");
+                    return Ok(products);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "GetAll failure");
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Sorry something went wrong");
+                }
             }
         }
 
