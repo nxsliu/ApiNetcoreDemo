@@ -37,7 +37,7 @@ namespace ApiDemo.Controllers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "GetAll failure");
+                    _logger.LogError(ex, "GetAll failed");
                     return StatusCode(StatusCodes.Status500InternalServerError, "Sorry something went wrong");
                 }
             }
@@ -46,81 +46,104 @@ namespace ApiDemo.Controllers
         [HttpGet("{id}", Name = "GetProduct")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            try
+            using (_logger.BeginScope($"Log ScopeId: {Guid.NewGuid()}"))
             {
-                var product = await _productService.GetProduct(id);
-
-                if (product == null)
+                try
                 {
-                    return NotFound();
-                }
+                    _logger.LogInformation($"GetById for Id: {id}");
+                    var product = await _productService.GetProduct(id);
 
-                return Ok(product);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Sorry something went wrong");
+                    if (product == null)
+                    {
+                        return NotFound();
+                    }
+
+                    return Ok(product);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"GetById failed for Id: {id}");
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Sorry something went wrong");
+                }
             }
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody]ProductItem item)
-        {            
-            if (!ValidateProduct(item))
-                return BadRequest();
+        {
+            using (_logger.BeginScope($"Log ScopeId: {Guid.NewGuid()}"))
+            {                
+                try
+                {
+                    _logger.LogInformation($"Create", item);
 
-            try
-            {
-                await _productService.CreateProduct(item);
+                    if (!ValidateProduct(item))
+                        return BadRequest();
+                    
+                    await _productService.CreateProduct(item);
 
-                return CreatedAtRoute("GetProduct", new { id = item.Id }, item);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Sorry something went wrong");
+                    return CreatedAtRoute("GetProduct", new { id = item.Id }, item);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Create failed", item);
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Sorry something went wrong");
+                }
             }
         }
 
         [HttpPut("{id}")]
         public async Task <IActionResult> Update([FromBody]ProductItem item)
-        {            
-            try
+        {
+            using (_logger.BeginScope($"Log ScopeId: {Guid.NewGuid()}"))
             {
-                if (!ValidateProduct(item))
-                    return BadRequest();
-
-                var product = await _productService.UpdateProduct(item);
-
-                if (product == null)
+                try
                 {
-                    return NotFound();
-                }
+                    _logger.LogInformation($"Update", item);
 
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Sorry something went wrong");
+                    if (!ValidateProduct(item))
+                        return BadRequest();
+
+                    var product = await _productService.UpdateProduct(item);
+
+                    if (product == null)
+                    {
+                        return NotFound();
+                    }
+
+                    return NoContent();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Update failed", item);
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Sorry something went wrong");
+                }
             }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            try
+            using (_logger.BeginScope($"Log ScopeId: {Guid.NewGuid()}"))
             {
-                var item = await _productService.DeleteProduct(id);
-
-                if (item == null)
+                try
                 {
-                    return NotFound();
-                }
+                    _logger.LogInformation($"Delete for Id: {id}");
 
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Sorry something went wrong");
+                    var item = await _productService.DeleteProduct(id);
+
+                    if (item == null)
+                    {
+                        return NotFound();
+                    }
+
+                    return NoContent();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Delete failed for id {id}");
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Sorry something went wrong");
+                }
             }
         }
 
