@@ -33,6 +33,11 @@ namespace ApiDemo.Controllers
                     _logger.LogInformation("GetAll");
                     var products = _productService.GetAllProducts();
 
+                    if (!products.Any())
+                    {
+                        return NotFound();
+                    }
+
                     return Ok(products);
                 }
                 catch (Exception ex)
