@@ -42,6 +42,21 @@ namespace ApiDemo.UnitTests.Controllers
         }
 
         [Fact]
+        public void GetAll_WhenNoResults_ShouldReturnNotFound()
+        {
+            // arrange
+            _mockProductService.GetAllProducts().Returns(new List<ProductItem>());
+
+            var controller = new ProductController(_mockProductService, _mockLogger);
+
+            // act
+            var result = controller.GetAll();
+
+            // assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
         public void GetAll_WhenSuccessful_ShouldReturnOkListOfProducts()
         {
             // arrange
